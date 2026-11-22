@@ -10,6 +10,13 @@ app = Flask(__name__)
 MODEL_PATH = 'superkart_model_v1_0.joblib'
 model = joblib.load(MODEL_PATH)
 
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        'status': 'healthy',
+        'message': 'SuperKart Forecasting API is up and running!'
+    })
+
 @app.route('/v1/predict', methods=['POST'])
 def predict():
     try:

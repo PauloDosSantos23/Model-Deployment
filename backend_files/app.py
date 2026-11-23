@@ -1,69 +1,93 @@
-import os
-import joblib
-import pandas as pd
+# Import necessary libraries
 import numpy as np
-from flask import Flask, request, jsonify
+import joblib  # For loading the serialized model
+import pandas as pd  # For data manipulation
+from flask import Flask, request, jsonify  # For creating the Flask API
 
-app = Flask(__name__)
+# Initialize the Flask application
+superkart_predictor_api = Flask("SuperKart Predictor")
 
-# Define paths and load our serialized Random Forest model
-MODEL_PATH = 'superkart_model_v1_0.joblib'
-model = joblib.load(MODEL_PATH)
+# Load the trained machine learning model
+model = joblib.load("superkart_model_v1_0.joblib")
 
-@app.route('/', methods=['GET'])
+# Define a route for the home page (GET request)
+@superkart_predictor_api.get('/')
 def home():
-    return jsonify({
-        'status': 'healthy',
-        'message': 'SuperKart Forecasting API is up and running!'
-    })
+    """
+    This function handles GET requests to the root URL ('/') of the API.
+    It returns a simple welcome message.
+    """
+    return "SuperKart Forecasting API is up and running!"
 
-@app.route('/v1/predict', methods=['POST'])
-def predict():
-    try:
-        # Retrieve the single payload from the request
-        data = request.get_json(force=True)
+# Define an endpoint for single product prediction (POST request)
+@superkart_predictor_api.post('/v1/predict')
+def predict_superkart():
+    """
+    This function handles POST requests to the '/v1/predict' endpoint.
+    It expects a JSON payload containing product details and returns
+    the predicted superkart as a JSON response.
+    """
+    # Get the JSON data from the request body
+    predict_data = request.get_json()
 
-        # Convert payload to a DataFrame row matching training shape
-        input_df = pd.DataFrame([data])
+    # Extract relevant features from the JSON data
+    sample = {
+        'product_id_char': predict_data['product_id_char'],
+        'product_sugar_content': predict_data['product_sugar_content'],
+        'store_size': predict_data['store_size'],
+        'store_location_city_type': predict_data['store_location_city_type'],
+        'store_type': predict_data['store_type'],
+        'product_type_category': predict_data['product_type_category'],
+        'product_weight': predict_data['product_weight'],
+        'product_mrp': predict_data['product_mrp'],
+        'store_age_years': predict_data['store_age_years'],
+    }
 
-        # Make prediction
-        prediction = model.predict(input_df)[0]
+    # Convert the extracted data into a Pandas DataFrame
+    input_data = pd.DataFrame([sample])
 
-        return jsonify({
-            'status': 'success',
-            'prediction': float(prediction)
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 400
+    # Make prediction (get predict)
+    predicted_predict = model.predict(input_data)[0]
 
-@app.route('/v1/predictbatch', methods=['POST'])
-def predictbatch():
-    try:
-        # Check if file is uploaded
-        if 'file' not in request.files:
-            return jsonify({'status': 'error', 'message': 'No file part in request'}), 400
+    # Calculate actual predict
+    predicted_predict = np.exp(predicted_predict)
 
-        file = request.files['file']
+    # Convert predicted_predict to Python float
+    predicted_predict = round(float(predicted_predict), 2)
+    # The conversion above is needed as we convert the model prediction (predict) to actual predict using np.exp, which returns predictions as NumPy float32 values.
+    # When we send this value directly within a JSON response, Flask's jsonify function encounters a datatype error
 
-        # Read the uploaded CSV file directly into pandas
-        input_df = pd.read_csv(file.stream)
+    # Return the actual predict
+    return jsonify({'Predicted Predict (in unit)': predicted_predict})
 
-        # Generate predictions for all rows
-        predictions = model.predict(input_df)
 
-        # Format predictions matching the expected indices
-        results = {str(i): float(pred) for i, pred in enumerate(predictions)}
+# Define an endpoint for batch prediction (POST request)
+@superkart_predictor_api.post('/v1/predictbatch')
+def predict_superkart_batch():
+    """
+    This function handles POST requests to the '/v1/predictbatch' endpoint.
+    It expects a CSV file containing product details for multiple products
+    and returns the predicted predict as a dictionary in the JSON response.
+    """
+    # Get the uploaded CSV file from the request
+    file = request.files['file']
 
-        return jsonify(results)
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 400
+    # Read the CSV file into a Pandas DataFrame
+    input_data = pd.read_csv(file)
 
+    # Make predictions for all products in the DataFrame (get predict)
+    predicted_superkart = model.predict(input_data).tolist()
+
+    # Calculate actual predict
+    predicted_superkart = [round(float(np.exp(predict)), 2) for predict in predicted_superkart]
+
+    # Create a dictionary of predictions with predict IDs as keys
+    predict_ids = input_data['id'].tolist()  # Assuming 'id' is the predict ID column
+    output_dict = dict(zip(predict_ids, predicted_superkart))  # Use actual predict
+
+    # Return the predictions dictionary as a JSON response
+    return output_dict
+
+# Run the Flask application in debug mode if this script is executed directly
 if __name__ == '__main__':
-    # Run the server inside our upcoming Docker container context on port 7860
-    app.run(host='0.0.0.0', port=7860, debug=False)
+    superkart_predictor_api.run(debug=True)

@@ -1,19 +1,19 @@
-FROM python:3.13-slim
+FROM python:3.12-slim
+
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy all backend files including model and requirements
-COPY . /app
 
-# Install system build dependencies and python requirements
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
-    pip install --no-cache-dir -r requirements.txt && \
-    apt-get purge -y --auto-remove build-essential && \
-    rm -rf /var/lib/apt/lists/*
 
-# Expose the API port
-EXPOSE 7860
+# Copy all files from the current directory to the container's working directory
+COPY . .
 
-# Command to run the Flask application
-CMD ["python", "app.py"]
+# Install dependencies from the requirements file without using cache to reduce image size
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Define the command to start the application using Gunicorn with 1 worker processes
+# - `-w 1`: Uses 1 worker processes for handling request
+# - `-b 0.0.0.0:7860`: Binds the server to port 7860 on all network interfaces
+# - `app:app`: Runs the Flask app (assuming `app.py` contains the Flask instance named `app`)
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:7860", "app:rental_price_predictor_api"]

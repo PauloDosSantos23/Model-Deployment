@@ -10,9 +10,9 @@ st.set_page_config(
 )
 
 st.title("🛒 SuperKart Sales Forecasting Service")
-st.markdown(""""
+st.markdown('''
 Welcome to the SuperKart Sales Forecasting system! This interface connects directly with our containerized machine learning microservice to deliver real-time and batch predictions.
-""")
+''')
 
 # Define backend API endpoints (using docker network alias inside codespaces/containers)
 BACKEND_BASE_URL = "http://backend:7860"

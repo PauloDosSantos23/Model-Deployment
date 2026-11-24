@@ -20,10 +20,10 @@ def home():
     return "SuperKart Forecasting API is up and running!"
 
 # Define an endpoint for single product prediction (POST request)
-@superkart_predictor_api.post('/v1/predict')
-def predict_superkart():
+@superkart_predictor_api.post('/v1/product')
+def product_superkart():
     """
-    This function handles POST requests to the '/v1/predict' endpoint.
+    This function handles POST requests to the '/v1/product' endpoint.
     It expects a JSON payload containing product details and returns
     the predicted superkart as a JSON response.
     """
@@ -62,10 +62,10 @@ def predict_superkart():
 
 
 # Define an endpoint for batch prediction (POST request)
-@superkart_predictor_api.post('/v1/predictbatch')
+@superkart_predictor_api.post('/v1/productbatch')
 def predict_superkart_batch():
     """
-    This function handles POST requests to the '/v1/predictbatch' endpoint.
+    This function handles POST requests to the '/v1/productbatch' endpoint.
     It expects a CSV file containing product details for multiple products
     and returns the predicted predict as a dictionary in the JSON response.
     """

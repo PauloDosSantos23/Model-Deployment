@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 # - `-w 1`: Uses 1 worker processes for handling request
 # - `-b 0.0.0.0:7860`: Binds the server to port 7860 on all network interfaces
 # - `app:app`: Runs the Flask app (assuming `app.py` contains the Flask instance named `app`)
-CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:7860", "app:rental_price_predictor_api"]
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:7860", "app:superkart_predictor_api"]

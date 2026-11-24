@@ -33,7 +33,7 @@ O projeto é dividido em dois microsserviços que rodam em containers Docker ind
     ```
 
 ### 3. Predição em Lote
-*   **Mapeamento:** `POST /v1/predictbatch`
+*   **Mapeamento:** `POST /v1/productbatch`
 *   **Entrada:** Arquivo `.csv` enviado via formulário multipart (`files={'file': ...}`).
 
 ## 🛠️ Como rodar o projeto no GitHub Codespaces
